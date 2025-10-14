@@ -1,121 +1,106 @@
-var map = L.map('map', {
-    zoomControl: false,
-    scrollWheelZoom: false,
-    doubleClickZoom: false,
-    dragging: false,
-}).setView([22, 0], 2);
+// Initialize map focused on India
+var map = L.map("map", {
+  zoomControl: false,
+  scrollWheelZoom: false,
+  doubleClickZoom: false,
+  dragging: false,
+}).setView([16, 80], 5); // Center over India
 
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 2,
-    minZoom: 2,
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+// Tile layer
+L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+  attribution:
+    '&copy; <a href="https://carto.com/">CARTO</a> | &copy; OpenStreetMap',
+  subdomains: "abcd",
+  maxZoom: 19,
 }).addTo(map);
 
-// Define ship supply data per country with ISO codes
-var shipSupplyData = {
-    "BHR": 151, "BGD": 151, "BRN": 51, "CHN": 501, "HKG": 51, "IND": 1001, "IDN": 501,
-    "KWT": 151, "MYS": 501, "MDV": 151, "MMR": 151, "OMN": 501, "PHL": 151, "QAT": 501,
-    "SAU": 501, "KOR": 151, "LKA": 501, "TWN": 251, "THA": 251, "TUR": 501, "ARE": 501,
-    "VNM": 151, "YEM": 151, "CYP": 51, "DNK": 51, "FRA": 51, "IRL": 51, "NLD": 51, 
-    "NOR": 51, "GBR": 51, "CAN": 51, "PAN": 151, "USA": 151, "BRA": 51, "EGY": 151, 
-    "ZAF": 51, "MAR": 51, "RUS": 151, "CHL": 51, "MEX": 51, "GRC": 1001, "ESP": 51, 
-    "DEU": 51, "ITA": 51 
-};
 
-// Function to assign color based on ship supply numbers
-function getColor(supplies) {
-    return supplies > 1000 ? '#800026' :
-           supplies > 500  ? '#BD0026' :
-           supplies > 250  ? '#E31A1C' :
-           supplies > 150  ? '#FC4E2A' :
-           supplies > 50   ? '#FD8D3C' :
-                             '#FED976';
-}
 
-// Style each country based on ship supplies
-function style(feature) {
-    var supplies = shipSupplyData[feature.properties.ISO_A3] || 0;  // Use ISO_A3 code to match data
-    return {
-        fillColor: getColor(supplies),
-        weight: 2,
-        opacity: 1,
-        color: 'white',
-        dashArray: '3',
-        fillOpacity: 0.7
-    };
-}
 
-// Highlight on hover
-function highlightFeature(e) {
-    var layer = e.target;
-    layer.setStyle({
-        weight: 5,
-        color: '#666',
-        dashArray: '',
-        fillOpacity: 0.7
-    });
-    layer.bringToFront();
-    info.update(layer.feature.properties);
-}
+// Major Indian sea ports data
+var ports = [
+  // Major Ports
+  { name: "Kandla", coords: [23.03, 70.23] },
+  { name: "Mumbai", coords: [18.96, 72.82] },
+  { name: "Mormugao", coords: [15.41, 73.83] },
+  { name: "Kochi", coords: [9.97, 76.28] },
+  { name: "Chennai", coords: [13.09, 80.28] },
+  { name: "Visakhapatnam", coords: [17.73, 83.3] },
+  { name: "Kolkata", coords: [22.57, 88.36] },
+  { name: "Haldia", coords: [22.02, 88.06] },
+  { name: "Paradip", coords: [20.32, 86.63] },
+  { name: "Tuticorin", coords: [8.76, 78.13] },
+  { name: "Ennore", coords: [13.19, 80.33] },
 
-// Reset the highlight when not hovered
-function resetHighlight(e) {
-    geojson.resetStyle(e.target);
-    info.update();
-}
+  // Additional High-Traffic / Growing Ports
+  { name: "Mundra", coords: [22.73, 69.72] },
+  { name: "Sikka", coords: [22.44, 69.84] },
+  { name: "Dahej", coords: [21.7, 72.53] },
+  { name: "Magdalla", coords: [21.13, 72.68] },
+  { name: "Dighi", coords: [18.25, 72.98] },
+  { name: "Ratnagiri", coords: [16.98, 73.29] },
+  { name: "Karwar", coords: [14.8, 74.13] },
+  { name: "Krishnapatnam", coords: [14.25, 80.12] },
+  { name: "Machilipatnam", coords: [16.18, 81.13] },
+  { name: "Kakinada", coords: [16.93, 82.25] },
+  { name: "Gangavaram", coords: [17.68, 83.28] },
+  { name: "Dhamra", coords: [20.78, 86.94] },
+  { name: "Cuddalore", coords: [11.73, 79.77] },
+  { name: "Nagapattinam", coords: [10.77, 79.83] },
+  { name: "Manappad", coords: [8.38, 78.03] },
+  { name: "Vizhinjam", coords: [8.38, 76.97] },
+  { name: "Veraval", coords: [20.91, 70.37] },
+  { name: "Porbandar", coords: [21.64, 69.61] },
+  { name: "Sundarbans (Kolkata Outer)", coords: [21.95, 88.85] },
+  { name: "Mangalore", coords: [12.94, 74.83] },
+  { name: "Malpe", coords: [13.34, 74.73] },
+  { name: "Kasargod", coords: [12.5, 75.0] },
+  { name: "Beypore", coords: [11.17, 75.8] },
+  { name: "Alappuzha", coords: [9.5, 76.34] },
+  { name: "Kollam", coords: [8.88, 76.59] },
+  { name: "Baleshwar", coords: [21.5, 86.94] },
+  { name: "Gopalpur", coords: [19.27, 84.9] },
+];
 
-// Zoom to country on click
-function zoomToFeature(e) {
-    map.fitBounds(e.target.getBounds());
-}
 
-// Define interactions with each country
-function onEachFeature(feature, layer) {
-    layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: zoomToFeature
-    });
-}
+// Custom marker icon (optional: aesthetic)
+var shipIcon = L.icon({
+  iconUrl: "assets/imgs/port-sign.png", // ship icon
+  iconSize: [25, 25],
+  iconAnchor: [12, 12],
+  popupAnchor: [0, -12],
+});
 
-// Add GeoJSON data for world countries
-var geojson = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson", {
-    style: style,
-    onEachFeature: onEachFeature
-}).addTo(map);
-
-// Control for displaying ship supply info
+// Info control (tooltip on hover)
 var info = L.control();
 info.onAdd = function (map) {
-    this._div = L.DomUtil.create('div', 'info');
-    this.update();
-    return this._div;
+  this._div = L.DomUtil.create("div", "info");
+  this.update();
+  return this._div;
 };
-
-// Update the info box on hover
 info.update = function (props) {
-    this._div.innerHTML = '<h4>Ship Supplies Worldwide</h4>' + (props ?
-        '<b>' + props.ADMIN + '</b><br />'
-        : 'Hover over a country');
+  this._div.innerHTML =
+    "<h4>Indian Sea Ports</h4>" +
+    (props ? "<b>" + props + "</b>" : "Hover over a port");
 };
-
 info.addTo(map);
 
-// Legend for the map
-var legend = L.control({ position: 'bottomright' });
+// Add port markers
+ports.forEach(function (port) {
+  var marker = L.marker(port.coords, { icon: shipIcon }).addTo(map);
+  marker.on("mouseover", function () {
+    info.update(port.name);
+  });
+  marker.on("mouseout", function () {
+    info.update();
+  });
+});
+
+// Optional: legend
+var legend = L.control({ position: "bottomright" });
 legend.onAdd = function (map) {
-    var div = L.DomUtil.create('div', 'info legend'),
-        grades = [0, 50, 150, 250, 500, 1000],
-        labels = [];
-
-    // Create a colored square for each supply range
-    for (var i = 0; i < grades.length; i++) {
-        div.innerHTML +=
-            '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-    }
-
-    return div;
+  var div = L.DomUtil.create("div", "info legend");
+  div.innerHTML = "<i style='background:#9b1003'></i> 100+ Ports Served";
+  return div;
 };
-
 legend.addTo(map);
